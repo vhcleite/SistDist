@@ -5,11 +5,11 @@ import java.net.DatagramPacket;
 public class LogUtils {
   
   public static void logSentDatagramPacketInfo(DatagramPacket datagramPackage) {
-    logDatagramPacketInfo("Enviada para", datagramPackage);
+    logDatagramPacketInfo("Enviada ", datagramPackage);
   }
   
   public static void logReceivedDatagramPacketInfo(DatagramPacket datagramPackage) {
-    logDatagramPacketInfo("Recebida de ", datagramPackage);
+    logDatagramPacketInfo("Recebida ", datagramPackage);
   }
   
   private static void logDatagramPacketInfo(String origin, DatagramPacket datagramPackage) {
