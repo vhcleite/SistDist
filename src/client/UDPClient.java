@@ -107,30 +107,6 @@ class UDPClient {
     clientSocket.close();
   }
   
-  private static StructuredMessage[] generateSequenceWithDuplicatedMessages(String[] messages, int indexToRepeat) {
-    
-    System.out.println("messages.length: " + messages.length);
-    int messagesLength = messages.length + 1;
-    StructuredMessage[] structuredMessages = new StructuredMessage[messagesLength];
-    
-    for (int index = 0; index < messages.length; index++) {
-      // FIXME
-      if (index <= indexToRepeat) {
-        structuredMessages[index] = new StructuredMessage(index, messages[index]);
-        System.out.printf("StructuredMessage de Index %d codificada com %s\n", (index), messages[index]);
-        if (index == indexToRepeat) {
-          structuredMessages[index + 1] = new StructuredMessage(index, messages[index]);
-          System.out.printf("StructuredMessage de Index %d codificada com %s\n", (index + 1), messages[index]);
-        }
-      } else {
-        structuredMessages[index + 1] = new StructuredMessage(index + 1, messages[index]);
-        System.out.printf("StructuredMessage de Index %d codificada com %s\n", (index + 1), messages[index]);
-      }
-      System.out.println("mensagem de index codificada: " + index);
-    }
-    return structuredMessages;
-  }
-  
   private static StructuredMessage[] generateOrdelySequence(String[] messages) {
     
     System.out.println("messages.length: " + messages.length);
@@ -138,7 +114,7 @@ class UDPClient {
     
     for (int index = 0; index < messages.length; index++) {
       System.out.println("index: " + index);
-      structuredMessages[index] = new StructuredMessage(index, messages[index]);
+      structuredMessages[index] = new StructuredMessage(index, messages[index], messages.length);
     }
     return structuredMessages;
   }
@@ -150,7 +126,7 @@ class UDPClient {
     
     for (int index = 0; index < messages.length; index++) {
       System.out.println("index: " + index);
-      structuredMessages[messages.length - index - 1] = new StructuredMessage(index, messages[index]);
+      structuredMessages[messages.length - index - 1] = new StructuredMessage(index, messages[index], messages.length);
     }
     return structuredMessages;
   }

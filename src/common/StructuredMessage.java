@@ -8,13 +8,16 @@ public class StructuredMessage {
   
   private int sequenceNumber;
   
+  private int numberOfPackets;
+  
   public StructuredMessage() {
     
   }
   
-  public StructuredMessage(int sequenceNumber, String data) {
+  public StructuredMessage(int sequenceNumber, String data, int numberOfPackets) {
     this.sequenceNumber = sequenceNumber;
     this.data = data;
+    this.numberOfPackets = numberOfPackets;
   }
   
   public int getSequenceNumber() {
@@ -34,7 +37,8 @@ public class StructuredMessage {
   }
   
   public String toString() {
-    return String.format("%d" + STRING_SEPARATOR + "%s", getSequenceNumber(), getData());
+    return String.format("%d" + STRING_SEPARATOR + "%s" + STRING_SEPARATOR + "%d", //
+        getSequenceNumber(), getData(), getNumberOfPackets());
   }
   
   public byte[] getBytes() {
@@ -46,7 +50,15 @@ public class StructuredMessage {
     
     // Mensagem está no formato sequenceNumber:data
     String[] stringArray = messageString.split(STRING_SEPARATOR);
-    return new StructuredMessage(Integer.parseInt(stringArray[0]), stringArray[1]);
+    return new StructuredMessage(Integer.parseInt(stringArray[0]), stringArray[1], Integer.parseInt(stringArray[2]));
+  }
+  
+  public int getNumberOfPackets() {
+    return numberOfPackets;
+  }
+  
+  public void setNumberOfPackets(int numberOfPackets) {
+    this.numberOfPackets = numberOfPackets;
   }
   
 }
