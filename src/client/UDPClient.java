@@ -38,7 +38,7 @@ class UDPClient {
   
   public static void main(String args[]) throws Exception {
     
-    setTestCase(UDPTestCase.ORDELY_MESSAGES);
+    setTestCase(UDPTestCase.UNORDELY_MESSAGES);
     setIndexToRepeatOrLost(5);
     
     // Instancia variáveis de socket

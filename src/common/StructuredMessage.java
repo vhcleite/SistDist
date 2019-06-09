@@ -1,6 +1,6 @@
 package common;
 
-public class StructuredMessage implements Comparable<StructuredMessage> {
+public class StructuredMessage {
   
   private static final String STRING_SEPARATOR = ":";
   
@@ -37,7 +37,7 @@ public class StructuredMessage implements Comparable<StructuredMessage> {
   }
   
   public String toString() {
-    return String.format("%d" + STRING_SEPARATOR + "%s" + STRING_SEPARATOR + "%d", //
+    return String.format("%d" + STRING_SEPARATOR + "%s" + STRING_SEPARATOR + "%d" + STRING_SEPARATOR, //
         getSequenceNumber(), getData(), getNumberOfPackets());
   }
   
@@ -47,8 +47,14 @@ public class StructuredMessage implements Comparable<StructuredMessage> {
   
   public static StructuredMessage getStructuredMessage(byte[] byteArray) {
     String messageString = new String(byteArray);
+//    System.out.println(messageString);
     
     String[] stringArray = messageString.split(STRING_SEPARATOR);
+    
+//    System.out.println("sequenceNumber: " + stringArray[0]);
+//    System.out.println("data: " + stringArray[1]);
+//    System.out.println("numberOfPackets: " + stringArray[2]);
+    
     return new StructuredMessage(Integer.parseInt(stringArray[0]), stringArray[1], Integer.parseInt(stringArray[2]));
   }
   
@@ -58,17 +64,5 @@ public class StructuredMessage implements Comparable<StructuredMessage> {
   
   public void setNumberOfPackets(int numberOfPackets) {
     this.numberOfPackets = numberOfPackets;
-  }
-  
-  // Implementacao da interface Comparable
-  public int compareTo(StructuredMessage message) {
-    if (getSequenceNumber() > message.getSequenceNumber()) {
-      return 1;
-    } else if (getSequenceNumber() == message.getSequenceNumber()) {
-      return 0;
-    } else {
-      return -1;
-      
-    }
   }
 }
