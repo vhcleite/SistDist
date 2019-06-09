@@ -1,6 +1,6 @@
 package common;
 
-public class StructuredMessage {
+public class StructuredMessage implements Comparable<StructuredMessage> {
   
   private static final String STRING_SEPARATOR = ":";
   
@@ -48,7 +48,6 @@ public class StructuredMessage {
   public static StructuredMessage getStructuredMessage(byte[] byteArray) {
     String messageString = new String(byteArray);
     
-    // Mensagem está no formato sequenceNumber:data
     String[] stringArray = messageString.split(STRING_SEPARATOR);
     return new StructuredMessage(Integer.parseInt(stringArray[0]), stringArray[1], Integer.parseInt(stringArray[2]));
   }
@@ -61,4 +60,15 @@ public class StructuredMessage {
     this.numberOfPackets = numberOfPackets;
   }
   
+  // Implementacao da interface Comparable
+  public int compareTo(StructuredMessage message) {
+    if (getSequenceNumber() > message.getSequenceNumber()) {
+      return 1;
+    } else if (getSequenceNumber() == message.getSequenceNumber()) {
+      return 0;
+    } else {
+      return -1;
+      
+    }
+  }
 }
