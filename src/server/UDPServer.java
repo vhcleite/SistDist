@@ -35,6 +35,7 @@ class UDPServer {
           receivePacket.getPort());
       
       LogUtils.logSentDatagramPacketInfo(sendPacket);
+      System.out.println();
       
       // Envia resposta para cliente
       serverSocket.send(sendPacket);

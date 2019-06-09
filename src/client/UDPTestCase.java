@@ -1,0 +1,7 @@
+package client;
+
+public enum UDPTestCase {
+  
+  ORDELY_MESSAGES, UNORDELY_MESSAGES, LOST_MESSAGES, REPEATED_MESSAGE;
+
+}
