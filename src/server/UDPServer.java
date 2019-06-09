@@ -2,10 +2,15 @@ package server;
 
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
+import java.util.ArrayList;
+import java.util.Iterator;
 
 import common.LogUtils;
 
 class UDPServer {
+  
+  // Lista com handler dos clientes
+  private static ArrayList<ClientHandlerThread> clientHandlerList = new ArrayList<ClientHandlerThread>();
   
   // Tamanho do buffer
   private static final int DATA_SIZE = 1024;
@@ -15,31 +20,54 @@ class UDPServer {
   
   public static void main(String args[]) throws Exception {
     
+    DatagramSocket serverSocket = new DatagramSocket(SERVER_PORT);
     while (true) {
-      DatagramSocket serverSocket = new DatagramSocket(SERVER_PORT);
       
       byte[] receiveData = new byte[DATA_SIZE];
-      byte[] sendData = new byte[DATA_SIZE];
       
       DatagramPacket receivePacket = new DatagramPacket(receiveData, receiveData.length);
       
-      System.out.println("Servidor aguardando...");
+      System.out.println("\r\nServidor aguardando...");
       serverSocket.receive(receivePacket);
       LogUtils.logReceivedDatagramPacketInfo(receivePacket);
       
-      // Forma resposta do servidor
-      String response = String.format("O servidor recebeu: " + new String(receivePacket.getData()));
+      passPacketToClientHandler(serverSocket, receivePacket);
       
-      sendData = response.getBytes();
-      DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, receivePacket.getAddress(),
-          receivePacket.getPort());
-      
-      LogUtils.logSentDatagramPacketInfo(sendPacket);
-      System.out.println();
-      
-      // Envia resposta para cliente
-      serverSocket.send(sendPacket);
-      serverSocket.close();
     }
+  }
+  
+  private static void passPacketToClientHandler(DatagramSocket serverSocket, DatagramPacket receivePacket) {
+    
+    ClientHandlerThread clientHandler = findClientHandler(receivePacket);
+    
+    if (clientHandler == null) {
+      // Caso não haja um hanfler, necessário criar e adicionar na lista
+      clientHandler = new ClientHandlerThread(serverSocket, receivePacket.getPort(), receivePacket.getAddress());
+      getClientHandlerList().add(clientHandler);
+      clientHandler.start();
+    }
+    
+    clientHandler.processMessagePacket(receivePacket);
+    
+  }
+  
+  private static ClientHandlerThread findClientHandler(DatagramPacket receivePacket) {
+    
+    Iterator<ClientHandlerThread> iterator = getClientHandlerList().iterator();
+    while (iterator.hasNext()) {
+      ClientHandlerThread clientHandler = iterator.next();
+      
+      if (clientHandler.getClientIP().equals(receivePacket.getAddress())
+          && clientHandler.getClientPort() == receivePacket.getPort()) {
+        System.out.println("Cliente encontrado na lista de clientHandler");
+        return clientHandler;
+      }
+    }
+    System.out.println("Cliente não encontrado na lista de clientHandler");
+    return null;
+  }
+  
+  public static ArrayList<ClientHandlerThread> getClientHandlerList() {
+    return clientHandlerList;
   }
 }

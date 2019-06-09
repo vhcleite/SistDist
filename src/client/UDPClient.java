@@ -38,8 +38,11 @@ class UDPClient {
   
   public static void main(String args[]) throws Exception {
     
-    setTestCase(UDPTestCase.REPEATED_MESSAGE);
+    setTestCase(UDPTestCase.ORDELY_MESSAGES);
     setIndexToRepeatOrLost(5);
+    
+    // Instancia variáveis de socket
+    DatagramSocket clientSocket = new DatagramSocket();
     
     // Gera mensagens de acordo com necessidade do caso de teste
     StructuredMessage[] structuredMessages = generateTestCaseStructuredMessages();
@@ -52,9 +55,12 @@ class UDPClient {
       // Envia a mesma mensagem para o servidor de acordo com caso de teste
       for (int repeatSend = 0; repeatSend < getNumberOfTimesToSendRepeatedMessage(); repeatSend++) {
         // Envia mensagem para Servidor e espera por uma reposta
-        transferDataWithServer(structuredMessages[index]);
+        transferDataWithServer(clientSocket, structuredMessages[index]);
+        Thread.sleep(1000);
       }
     }
+    
+    clientSocket.close();
   }
   
   private static StructuredMessage[] generateTestCaseStructuredMessages() {
@@ -84,10 +90,9 @@ class UDPClient {
     return index;
   }
   
-  private static void transferDataWithServer(StructuredMessage structuredMessage) throws IOException {
+  private static void transferDataWithServer(DatagramSocket clientSocket, StructuredMessage structuredMessage)
+      throws IOException {
     
-    // Instancia variáveis de socket
-    DatagramSocket clientSocket = new DatagramSocket();
     InetAddress IPAddress = InetAddress.getByName(SERVER_IP);
     byte[] sendData = new byte[DATA_SIZE];
     byte[] receiveData = new byte[DATA_SIZE];
@@ -100,11 +105,11 @@ class UDPClient {
     clientSocket.send(sendPacket);
     
     DatagramPacket receivePacket = new DatagramPacket(receiveData, receiveData.length);
+    System.out.println("Esperando Reposta do Servidor");
     clientSocket.receive(receivePacket);
     LogUtils.logReceivedDatagramPacketInfo(receivePacket);
     System.out.println();
     
-    clientSocket.close();
   }
   
   private static StructuredMessage[] generateOrdelySequence(String[] messages) {
