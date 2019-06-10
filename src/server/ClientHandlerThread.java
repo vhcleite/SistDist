@@ -35,11 +35,44 @@ public class ClientHandlerThread extends Thread {
     setShouldRun(true);
     while (getShouldRun()) {
       try {
-        Thread.sleep(1000);
+        // timeout para receber todas as mensagens
+        Thread.sleep(5000);
+        
+        // Verifica se mensagem está completa
+        if (hasReceivedAllPackets()) {
+          logSuccessMessage();
+          getMessages().clear();
+          setShouldRun(false);
+        } else {
+          // Caso mensagens não tenham chego, pedir para cliente reenviar
+          returnLostMessageSignalToClient();
+        }
+        
       } catch (InterruptedException e) {
       }
     }
     
+    System.out.println("Terminando " + getClientHandlerStringIdentification());
+    
+  }
+  
+  private void returnLostMessageSignalToClient() {
+    byte[] sendData = new byte[DATA_SIZE];
+    sendData = new StructuredMessage(0, EnumReturn.MISSING_PACKET.toString(), 1).getBytes();
+    
+    DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, getClientIP(), getClientPort());
+    LogUtils.logSentDatagramPacketInfo(sendPacket);
+    
+  }
+  
+  private void logSuccessMessage() {
+    System.out.println("!!!!!!!!!!!!!!!!!!!!!MENSAGENS RECEBIDAS!!!!!!!!!!!!!!!!!!!!!!!!!!");
+    System.out.println(getMessages());
+    System.out.println("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+  }
+  
+  private boolean hasReceivedAllPackets() {
+    return getMessages().size() == getMessages().get(0).getNumberOfPackets();
   }
   
   private boolean getShouldRun() {

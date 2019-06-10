@@ -38,7 +38,7 @@ class UDPClient {
   
   public static void main(String args[]) throws Exception {
     
-    setTestCase(UDPTestCase.UNORDELY_MESSAGES);
+    setTestCase(UDPTestCase.LOST_MESSAGES);
     setIndexToRepeatOrLost(5);
     
     // Instancia variáveis de socket
@@ -56,7 +56,7 @@ class UDPClient {
       for (int repeatSend = 0; repeatSend < getNumberOfTimesToSendRepeatedMessage(); repeatSend++) {
         // Envia mensagem para Servidor e espera por uma reposta
         transferDataWithServer(clientSocket, structuredMessages[index]);
-        Thread.sleep(1000);
+        Thread.sleep(50);
       }
     }
     
