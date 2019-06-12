@@ -7,6 +7,8 @@ import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.Queue;
 
 import common.EnumReturn;
 import common.LogUtils;
@@ -17,11 +19,14 @@ public class ClientHandlerThread extends Thread {
   
   private static final int DATA_SIZE = 1024;
   
+  private static final long TIMEOUT = 5 * (long) Math.pow(10, 9); // nanoseconds
+  
   private int clientPort;
   private InetAddress clientIP;
   private DatagramSocket serverSocket;
   private boolean shouldRun;
   private ArrayList<StructuredMessage> messages = new ArrayList<StructuredMessage>();
+  private Queue<DatagramPacket> notProcessedMessages = new LinkedList<DatagramPacket>();
   
   public ClientHandlerThread(DatagramSocket serverSocket, int port, InetAddress address) {
     super();
@@ -33,20 +38,33 @@ public class ClientHandlerThread extends Thread {
   public void run() {
     System.out.println("Cliente " + getClientHandlerStringIdentification() + " inicializado");
     setShouldRun(true);
+    
+    long startTime = System.nanoTime();
+    
     while (getShouldRun()) {
       try {
-        // timeout para receber todas as mensagens
-        Thread.sleep(5000);
         
-        // Verifica se mensagem está completa
-        if (hasReceivedAllPackets()) {
-          logSuccessMessage();
-          getMessages().clear();
-          setShouldRun(false);
-        } else {
-          // Caso mensagens não tenham chego, pedir para cliente reenviar
-          returnLostMessageSignalToClient();
+        if (getNotProcessedMessages().peek() != null) {
+          System.out.println(getClientHandlerStringIdentification() + " processando mensagem em fila com tamanho "
+              + getNotProcessedMessages().size());
+          processMessagePacket(getNotProcessedMessages().remove());
         }
+        
+        // timeout para receber todas as mensagens
+        if ((System.nanoTime() - startTime) >= TIMEOUT) {
+          // Verifica se mensagem está completa
+          if (hasReceivedAllPackets()) {
+            logSuccessMessage();
+            getMessages().clear();
+            setShouldRun(false);
+          } else {
+            // Caso mensagens não tenham chego, pedir para cliente reenviar
+            returnLostMessageSignalToClient();
+            startTime = System.nanoTime();
+          }
+        }
+        
+        Thread.sleep(50);
         
       } catch (InterruptedException e) {
       }
@@ -169,5 +187,17 @@ public class ClientHandlerThread extends Thread {
   
   public void setShouldRun(boolean shouldRun) {
     this.shouldRun = shouldRun;
+  }
+  
+  public void passMessagePacketToClientHandler(DatagramPacket receivePacket) {
+    getNotProcessedMessages().add(receivePacket);
+  }
+  
+  public Queue<DatagramPacket> getNotProcessedMessages() {
+    return notProcessedMessages;
+  }
+  
+  public void setNotProcessedMessages(Queue<DatagramPacket> notProcessedMessages) {
+    this.notProcessedMessages = notProcessedMessages;
   }
 }

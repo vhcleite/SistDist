@@ -47,8 +47,7 @@ class UDPServer {
       clientHandler.start();
     }
     
-    clientHandler.processMessagePacket(receivePacket);
-    
+    clientHandler.passMessagePacketToClientHandler(receivePacket);
   }
   
   private static ClientHandlerThread findClientHandler(DatagramPacket receivePacket) {

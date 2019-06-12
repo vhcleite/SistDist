@@ -5,6 +5,7 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 
+import common.EnumReturn;
 import common.LogUtils;
 import common.StructuredMessage;
 
@@ -55,8 +56,8 @@ class UDPClient {
       // Envia a mesma mensagem para o servidor de acordo com caso de teste
       for (int repeatSend = 0; repeatSend < getNumberOfTimesToSendRepeatedMessage(); repeatSend++) {
         // Envia mensagem para Servidor e espera por uma reposta
-        transferDataWithServer(clientSocket, structuredMessages[index]);
-        Thread.sleep(50);
+        transferDataWithServer(clientSocket, structuredMessages[index], index);
+        Thread.sleep(100);
       }
     }
     
@@ -90,26 +91,55 @@ class UDPClient {
     return index;
   }
   
-  private static void transferDataWithServer(DatagramSocket clientSocket, StructuredMessage structuredMessage)
-      throws IOException {
+  private static void transferDataWithServer(DatagramSocket clientSocket, StructuredMessage structuredMessage,
+      int packageNumber) throws IOException {
     
     InetAddress IPAddress = InetAddress.getByName(SERVER_IP);
     byte[] sendData = new byte[DATA_SIZE];
     byte[] receiveData = new byte[DATA_SIZE];
     
-    // Pega byte array da mensagem que deverá ser enviada
-    sendData = structuredMessage.getBytes();
+    boolean shouldResend = false;
     
-    DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, IPAddress, SERVER_PORT);
-    LogUtils.logSentDatagramPacketInfo(sendPacket);
-    clientSocket.send(sendPacket);
-    
-    DatagramPacket receivePacket = new DatagramPacket(receiveData, receiveData.length);
-    System.out.println("Esperando Reposta do Servidor");
-    clientSocket.receive(receivePacket);
-    LogUtils.logReceivedDatagramPacketInfo(receivePacket);
-    System.out.println();
-    
+    do {
+      
+      // Pega byte array da mensagem que deverá ser enviada
+      sendData = structuredMessage.getBytes();
+      
+      // TODO colocar filtro para simular perda de pacote
+      if (getTestCase() != UDPTestCase.LOST_MESSAGES || //
+          (getTestCase() == UDPTestCase.LOST_MESSAGES
+              && (shouldResend == true && getIndexToRepeatOrLost() == packageNumber)
+              || getIndexToRepeatOrLost() != packageNumber)) {
+        DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, IPAddress, SERVER_PORT);
+        LogUtils.logSentDatagramPacketInfo(sendPacket);
+        clientSocket.send(sendPacket);
+      }
+      
+      DatagramPacket receivePacket = new DatagramPacket(receiveData, receiveData.length);
+      System.out.println("Esperando Reposta do Servidor");
+      clientSocket.receive(receivePacket);
+      LogUtils.logReceivedDatagramPacketInfo(receivePacket);
+      System.out.println();
+      
+      // Verifica se pacote se perdeu
+      if (EnumReturn(StructuredMessage.getStructuredMessage(receiveData).getData()) == EnumReturn.MISSING_PACKET) {
+        shouldResend = true;
+      } else {
+        shouldResend = false;
+      }
+      
+    } while (shouldResend);
+  }
+  
+  private static EnumReturn EnumReturn(String data) {
+    switch (data) {
+      case "OK":
+        return EnumReturn.OK;
+      case "REPEATED_PACKET":
+        return EnumReturn.REPEATED_PACKET;
+      default:
+        return EnumReturn.MISSING_PACKET;
+    }
   }
   
   private static StructuredMessage[] generateOrdelySequence(String[] messages) {
