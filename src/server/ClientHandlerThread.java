@@ -81,6 +81,12 @@ public class ClientHandlerThread extends Thread {
     DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, getClientIP(), getClientPort());
     LogUtils.logSentDatagramPacketInfo(sendPacket);
     
+    try {
+      getServerSocket().send(sendPacket);
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
+    
   }
   
   private void logSuccessMessage() {
@@ -138,7 +144,7 @@ public class ClientHandlerThread extends Thread {
       // adiciono na lista caso não contenha
       addMessageInBuffer(message);
       System.out
-          .println(getClientHandlerStringIdentification() + " Numero de intens no buffer: " + getMessages().size());
+          .println(getClientHandlerStringIdentification() + " Numero de itens no buffer: " + getMessages().size());
     } else {
       // Retorno mensagem duplicada caso contenha
       ret = EnumReturn.REPEATED_PACKET;

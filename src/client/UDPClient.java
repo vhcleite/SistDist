@@ -77,11 +77,6 @@ class UDPClient {
   }
   
   private static int setTestCasesParameters(int index) {
-    // Verifica se envio de mensagem deverá ser pulado devido ao caso de teste
-    if (getTestCase() == UDPTestCase.LOST_MESSAGES && index == getIndexToRepeatOrLost()) {
-      index++;
-    }
-    
     // Verifica se envio de mensagem deverá se repetir devido ao caso de teste
     if (getTestCase() == UDPTestCase.REPEATED_MESSAGE && index == getIndexToRepeatOrLost()) {
       setNumberOfTimesToSendRepeatedMessage(2);
@@ -95,17 +90,16 @@ class UDPClient {
       int packageNumber) throws IOException {
     
     InetAddress IPAddress = InetAddress.getByName(SERVER_IP);
-    byte[] sendData = new byte[DATA_SIZE];
-    byte[] receiveData = new byte[DATA_SIZE];
     
     boolean shouldResend = false;
     
     do {
+      byte[] sendData = new byte[DATA_SIZE];
+      byte[] receiveData = new byte[DATA_SIZE];
       
       // Pega byte array da mensagem que deverá ser enviada
       sendData = structuredMessage.getBytes();
       
-      // TODO colocar filtro para simular perda de pacote
       if (getTestCase() != UDPTestCase.LOST_MESSAGES || //
           (getTestCase() == UDPTestCase.LOST_MESSAGES
               && (shouldResend == true && getIndexToRepeatOrLost() == packageNumber)
@@ -116,7 +110,7 @@ class UDPClient {
       }
       
       DatagramPacket receivePacket = new DatagramPacket(receiveData, receiveData.length);
-      System.out.println("Esperando Reposta do Servidor");
+      System.out.println("Esperando Reposta do Servidor de recebimento de pacote [" + packageNumber + "]");
       clientSocket.receive(receivePacket);
       LogUtils.logReceivedDatagramPacketInfo(receivePacket);
       System.out.println();
