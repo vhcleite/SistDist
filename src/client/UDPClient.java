@@ -4,8 +4,8 @@ class UDPClient {
   
   public static void main(String args[]) {
     
-    ClientThread client1 = new ClientThread(TestCaseEnum.ORDELY_MESSAGES);
-    ClientThread client2 = new ClientThread(TestCaseEnum.LOST_MESSAGES);
+    ClientThread client1 = new ClientThread(1, TestCaseEnum.ORDELY_MESSAGES);
+    ClientThread client2 = new ClientThread(2, TestCaseEnum.LOST_MESSAGES);
     
     System.out.println("Start do cliente1");
     client1.start();

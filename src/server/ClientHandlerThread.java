@@ -36,7 +36,7 @@ public class ClientHandlerThread extends Thread {
   }
   
   public void run() {
-    System.out.println("Cliente " + getClientHandlerStringIdentification() + " inicializado");
+    System.out.println(getClientHandlerId() + " inicializado");
     setShouldRun(true);
     
     long startTime = System.nanoTime();
@@ -45,8 +45,8 @@ public class ClientHandlerThread extends Thread {
       try {
         
         if (getNotProcessedMessages().peek() != null) {
-          System.out.println(getClientHandlerStringIdentification() + " processando mensagem em fila com tamanho "
-              + getNotProcessedMessages().size());
+          System.out.println(
+              getClientHandlerId() + "processando mensagem em fila com tamanho " + getNotProcessedMessages().size());
           processMessagePacket(getNotProcessedMessages().remove());
         }
         
@@ -70,7 +70,7 @@ public class ClientHandlerThread extends Thread {
       }
     }
     
-    System.out.println("Terminando " + getClientHandlerStringIdentification());
+    System.out.println("Terminando " + getClientHandlerId());
     
   }
   
@@ -79,7 +79,7 @@ public class ClientHandlerThread extends Thread {
     sendData = new StructuredMessage(0, EnumReturn.MISSING_PACKET.toString(), 1).getBytes();
     
     DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, getClientIP(), getClientPort());
-    LogUtils.logSentDatagramPacketInfo(sendPacket);
+    LogUtils.logSentDatagramPacketInfo(getClientHandlerId(), sendPacket);
     
     try {
       getServerSocket().send(sendPacket);
@@ -126,7 +126,7 @@ public class ClientHandlerThread extends Thread {
   public void addMessageInBuffer(StructuredMessage message) {
     getMessages().add(message);
     Collections.sort(getMessages(), new StructuredMessagesComparator());
-    System.out.printf(getClientHandlerStringIdentification() + "menssagem [%s] adicionada no buffer\r\n", message);
+    System.out.printf(getClientHandlerId() + "menssagem [%s] adicionada no buffer\r\n", message);
     System.out.println(getMessages());
   }
   
@@ -134,8 +134,8 @@ public class ClientHandlerThread extends Thread {
     
     EnumReturn ret = EnumReturn.OK;
     
-    System.out.println("---" + getClientHandlerStringIdentification());
-    LogUtils.logReceivedDatagramPacketInfo(receivePacket);
+    System.out.println("---" + getClientHandlerId());
+    LogUtils.logReceivedDatagramPacketInfo(getClientHandlerId(), receivePacket);
     
     StructuredMessage message = StructuredMessage.getStructuredMessage(receivePacket.getData());
     
@@ -143,25 +143,25 @@ public class ClientHandlerThread extends Thread {
     if (!bufferContainsMessage(message)) {
       // adiciono na lista caso não contenha
       addMessageInBuffer(message);
-      System.out
-          .println(getClientHandlerStringIdentification() + " Numero de itens no buffer: " + getMessages().size());
+      System.out.println(getClientHandlerId() + " Numero de itens no buffer: " + getMessages().size());
     } else {
       // Retorno mensagem duplicada caso contenha
       ret = EnumReturn.REPEATED_PACKET;
     }
     
     // Prepara resposta
+    System.out.println(getClientHandlerId() + "enviando resposta para cliente");
     byte[] sendData = new byte[DATA_SIZE];
     sendData = new StructuredMessage(0, ret.toString(), 1).getBytes();
     
     DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, getClientIP(), getClientPort());
-    LogUtils.logSentDatagramPacketInfo(sendPacket);
+    LogUtils.logSentDatagramPacketInfo(getClientHandlerId(), sendPacket);
     
     // Envia resposta
     try {
       getServerSocket().send(sendPacket);
     } catch (IOException e) {
-      System.out.println("Erro ao enviar reposta para cliente, " + e);
+      System.out.println(getClientHandlerId() + "Erro ao enviar reposta para cliente, " + e);
     }
     
   }
@@ -179,8 +179,8 @@ public class ClientHandlerThread extends Thread {
     return false;
   }
   
-  private String getClientHandlerStringIdentification() {
-    return "Handler of " + getClientIP() + ":" + getClientPort() + ":";
+  private String getClientHandlerId() {
+    return "Handler of " + getClientIP() + ":" + getClientPort() + " - ";
   }
   
   public DatagramSocket getServerSocket() {

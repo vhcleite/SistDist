@@ -29,15 +29,20 @@ class UDPServer {
       
       System.out.println("\r\nServidor aguardando...");
       serverSocket.receive(receivePacket);
-      LogUtils.logReceivedDatagramPacketInfo(receivePacket);
+      LogUtils.logReceivedDatagramPacketInfo(getDispatcherName(), receivePacket);
       
       passPacketToClientHandler(serverSocket, receivePacket);
       
     }
   }
   
+  private static String getDispatcherName() {
+    return "Dispatcher - ";
+  }
+  
   private static void passPacketToClientHandler(DatagramSocket serverSocket, DatagramPacket receivePacket) {
     
+    System.out.println(getDispatcherName() + "verificando se cliente esta na lista");
     ClientHandlerThread clientHandler = findClientHandler(receivePacket);
     
     if (clientHandler == null) {

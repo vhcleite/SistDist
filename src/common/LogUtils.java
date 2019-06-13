@@ -4,12 +4,12 @@ import java.net.DatagramPacket;
 
 public class LogUtils {
   
-  public static void logSentDatagramPacketInfo(DatagramPacket datagramPackage) {
-    logDatagramPacketInfo("Enviada ", datagramPackage);
+  public static void logSentDatagramPacketInfo(String id, DatagramPacket datagramPackage) {
+    logDatagramPacketInfo(id + "enviada ", datagramPackage);
   }
   
-  public static void logReceivedDatagramPacketInfo(DatagramPacket datagramPackage) {
-    logDatagramPacketInfo("Recebida ", datagramPackage);
+  public static void logReceivedDatagramPacketInfo(String id, DatagramPacket datagramPackage) {
+    logDatagramPacketInfo(id + "recebida ", datagramPackage);
   }
   
   private static void logDatagramPacketInfo(String origin, DatagramPacket datagramPackage) {

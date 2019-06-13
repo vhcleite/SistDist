@@ -23,6 +23,7 @@ public class ClientThread extends Thread {
   private TestCaseEnum testCase;
   private int indexToRepeatOrLost;
   private int numberOfTimesToSendRepeatedMessage = 1;
+  private int threadId;
   
   // Vetor com mesagens que serão enviadas
   private String[] messages = { //
@@ -38,8 +39,9 @@ public class ClientThread extends Thread {
       "M9", //
   };
   
-  public ClientThread(TestCaseEnum testCase) {
+  public ClientThread(int threadId, TestCaseEnum testCase) {
     setTestCase(testCase);
+    this.threadId = threadId;
   }
   
   public void run() {
@@ -53,6 +55,7 @@ public class ClientThread extends Thread {
       
       // Gera mensagens de acordo com necessidade do caso de teste
       StructuredMessage[] structuredMessages = generateTestCaseStructuredMessages();
+      System.out.println(getClientId() + "geradas mensagens estruturadas ");
       
       for (int index = 0; index < structuredMessages.length; index++) {
         
@@ -115,14 +118,15 @@ public class ClientThread extends Thread {
               && (shouldResend == true && getIndexToRepeatOrLost() == packageNumber)
               || getIndexToRepeatOrLost() != packageNumber)) {
         DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, IPAddress, SERVER_PORT);
-        LogUtils.logSentDatagramPacketInfo(sendPacket);
+        LogUtils.logSentDatagramPacketInfo(getClientId(), sendPacket);
         clientSocket.send(sendPacket);
+        System.out.println(getClientId() + "pacote [" + packageNumber + "] enviado");
       }
       
       DatagramPacket receivePacket = new DatagramPacket(receiveData, receiveData.length);
-      System.out.println("Esperando Reposta do Servidor de recebimento de pacote [" + packageNumber + "]");
+      System.out.println(getClientId() + "pacote [" + packageNumber + "] esperando reposta do servidor");
       clientSocket.receive(receivePacket);
-      LogUtils.logReceivedDatagramPacketInfo(receivePacket);
+      LogUtils.logReceivedDatagramPacketInfo(getClientId(), receivePacket);
       System.out.println();
       
       // Verifica se pacote se perdeu
@@ -148,11 +152,9 @@ public class ClientThread extends Thread {
   
   private StructuredMessage[] generateOrdelySequence(String[] messages) {
     
-    System.out.println("messages.length: " + messages.length);
     StructuredMessage[] structuredMessages = new StructuredMessage[messages.length];
     
     for (int index = 0; index < messages.length; index++) {
-      System.out.println("index: " + index);
       structuredMessages[index] = new StructuredMessage(index, messages[index], messages.length);
     }
     return structuredMessages;
@@ -197,4 +199,9 @@ public class ClientThread extends Thread {
   public void setNumberOfTimesToSendRepeatedMessage(int numberOfTimesToSendRepeatedMessage) {
     this.numberOfTimesToSendRepeatedMessage = numberOfTimesToSendRepeatedMessage;
   }
+  
+  private String getClientId() {
+    return "Client " + threadId + " - ";
+  }
+  
 }
